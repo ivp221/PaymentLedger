@@ -12,7 +12,7 @@ public record Money(long minorUnits, Currency currency) {
         }
     }
     public static Money of(long minorUnits, String ISOCode){
-        return new Money(minorUnits, Currency.getInstance(Objects.requireNonNull(ISOCode, "currency")));
+        return new Money(minorUnits,CurrencyOf(ISOCode) );
     }
 
     public static Money zero(String ISOCode){
@@ -21,12 +21,20 @@ public record Money(long minorUnits, Currency currency) {
 
     public Money plus(Money other){
         requiresSameCurrency(other);
-        return new Money(Math.addExact(minorUnits, other.minorUnits()), currency);
+        return new Money(Math.addExact(minorUnits, other.minorUnits), currency);
     }
 
     public Money minus(Money other){
         requiresSameCurrency(other);
-        return new Money(Math.subtractExact(minorUnits, other.minorUnits()), currency);
+        return new Money(Math.subtractExact(minorUnits, other.minorUnits), currency);
+    }
+
+    public static Currency CurrencyOf(String ISOCode){
+        try{
+            return Currency.getInstance(Objects.requireNonNull(ISOCode, "currency"));
+        }catch(IllegalArgumentException ex){
+            throw new IllegalArgumentException("Not a valid currency : " + ISOCode);
+        }
     }
 
     public Money negate(){
@@ -42,8 +50,8 @@ public record Money(long minorUnits, Currency currency) {
         return currency.getDefaultFractionDigits();
     }
     private void requiresSameCurrency(Money other){
-        if (!currency.equals(other.currency())){
-            throw new IllegalArgumentException("Currency mismatch");
+        if (!currency.equals(other.currency)){
+            throw new IllegalArgumentException("Currency mismatch : " + currency + " and " + other.currency);
         }
     }
 
